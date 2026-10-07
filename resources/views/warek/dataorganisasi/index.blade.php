@@ -1,0 +1,120 @@
+@extends('layouts.dashboard_warek_utama')
+
+@section('title', 'Data Organisasi WR III')
+
+@section('content')
+<div class="container mx-auto p-4">
+
+    <h1 class="text-2xl font-bold mb-4">Data Organisasi</h1>
+
+    {{-- Form Pencarian --}}
+    <form method="GET" action="{{ route('warek.dataorganisasi.index') }}" 
+          class="mb-4 flex items-center space-x-2">
+        <input type="text" name="q" value="{{ request('q') }}" placeholder="Cari nama organisasi"
+               class="px-4 py-2 border rounded-lg w-full dark:bg-gray-700 dark:text-gray-200 dark:border-gray-600">
+        
+        <button type="submit" 
+                class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            Cari
+        </button>
+    </form>
+
+    @if(request('q'))
+        <p class="mb-2 text-gray-500 dark:text-gray-400">
+            Hasil pencarian untuk: 
+            <strong class="text-gray-700 dark:text-gray-200">{{ request('q') }}</strong>
+        </p>
+    @endif
+
+    {{-- Tabel Data --}}
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg">
+            <thead>
+                <tr class="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                    <th class="px-4 py-2 text-left">No</th>
+                    <th class="px-4 py-2 text-left">Nama Organisasi</th>
+                    <th class="px-4 py-2 text-left">Aksi</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @forelse($organisasis as $org)
+                    <tr class="border-b dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                        <td class="px-4 py-2">{{ $loop->iteration }}</td>
+                        <td class="px-4 py-2">{{ $org->nama_organisasi }}</td>
+                        <td class="px-4 py-2 flex items-center space-x-2">
+
+                            {{-- Lihat --}}
+                            <a href="{{ route('warek.dataorganisasi.show', $org->id) }}"
+                               class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                                Lihat
+                            </a>
+
+                            {{-- Edit --}}
+                            <a href="{{ route('warek.dataorganisasi.edit', $org->id) }}"
+                               class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                                Edit
+                            </a>
+
+                            {{-- Hapus Modern --}}
+                            <form action="{{ route('warek.dataorganisasi.destroy', $org->id) }}" 
+                                  method="POST" class="delete-form">
+                                @csrf
+                                @method('DELETE')
+                                <button type="button"
+                                        class="delete-btn px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700">
+                                    Hapus
+                                </button>
+                            </form>
+
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="3" class="px-4 py-6 text-center text-gray-500 dark:text-gray-400">
+                            Tidak ada data organisasi.
+                        </td>
+                    </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    {{-- Pagination --}}
+    <div class="mt-4">
+        {{ $organisasis->appends(['q' => request('q')])->links() }}
+    </div>
+
+</div>
+
+{{-- SweetAlert2 --}}
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const form = this.closest('.delete-form');
+
+            Swal.fire({
+                title: 'Yakin ingin menghapus?',
+                text: "Data organisasi akan hilang permanen!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Ya, hapus!',
+                cancelButtonText: 'Batal',
+                background: document.documentElement.classList.contains('dark') ? '#1f2937' : '#fff',
+                color: document.documentElement.classList.contains('dark') ? '#fff' : '#000'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
+        });
+    });
+});
+</script>
+@endsection
